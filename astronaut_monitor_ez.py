@@ -343,6 +343,9 @@ selected_astro_name = st.sidebar.selectbox(
     on_change=preserve_sidebar_selection,
 )
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("Euphemia Zhang")
+
 # -----------------------------------------------------------------------------
 # MAIN DASHBOARD
 # -----------------------------------------------------------------------------
