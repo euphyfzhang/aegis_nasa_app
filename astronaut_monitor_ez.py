@@ -70,7 +70,8 @@ ASTRONAUT_PROFILES = [
         "immune_score": 84,     # 0-100
         "cardio_score": 86,     # 0-100
         "daily_exercise_hrs": 2.1,
-        "ai_vision_status": "Normal Activity"
+        "ai_vision_status": "Normal Activity",
+        "symptoms": ["Sleep disruption"]
     },
     {
         "id": "AST-02",
@@ -85,7 +86,8 @@ ASTRONAUT_PROFILES = [
         "immune_score": 65,
         "cardio_score": 89,
         "daily_exercise_hrs": 2.4,
-        "ai_vision_status": "Normal Activity"
+        "ai_vision_status": "Normal Activity",
+        "symptoms": ["Sleep disruption"]
     },
     {
         "id": "AST-03",
@@ -100,7 +102,8 @@ ASTRONAUT_PROFILES = [
         "immune_score": 64,
         "cardio_score": 78,
         "daily_exercise_hrs": 1.4, # Under daily 2-2.5 hr target
-        "ai_vision_status": "Mild Lethargy Detected"
+        "ai_vision_status": "Mild Lethargy Detected",
+        "symptoms": ["Sleep disruption"]
     },
     {
         "id": "AST-04",
@@ -115,7 +118,8 @@ ASTRONAUT_PROFILES = [
         "immune_score": 91,
         "cardio_score": 94,
         "daily_exercise_hrs": 2.5,
-        "ai_vision_status": "Active Strength Training"
+        "ai_vision_status": "Active Strength Training",
+        "symptoms": []
     }
 ]
 
@@ -286,6 +290,36 @@ def create_crew_network(crew_records):
                 source=astronaut["id"],
                 target=f"module:{module}",
                 color="#526174",
+                width=2,
+            ))
+
+    symptom_astronauts = [
+        astronaut for astronaut in crew_records
+        if "Sleep disruption" in astronaut.get("symptoms", [])
+    ]
+    if symptom_astronauts:
+        symptom_id = "symptom:sleep-disruption"
+        unaffected = [
+            astronaut["name"] for astronaut in crew_records
+            if "Sleep disruption" not in astronaut.get("symptoms", [])
+        ]
+        nodes.append(Node(
+            id=symptom_id,
+            label="Sleep Disruption",
+            title=(
+                f"Sleep disruption<br>Reported by {len(symptom_astronauts)} of {len(crew_records)} astronauts"
+                + (f"<br>Not reported by: {', '.join(unaffected)}" if unaffected else "")
+            ),
+            size=30,
+            color={"background": "#a78bfa", "border": "#e6edf3"},
+            x=580,
+            y=250,
+        ))
+        for astronaut in symptom_astronauts:
+            edges.append(Edge(
+                source=astronaut["id"],
+                target=symptom_id,
+                color="#a78bfa",
                 width=2,
             ))
 
