@@ -392,6 +392,13 @@ st.subheader("📊 Crew-Wide & Individual Health Analytics")
 col1, col2, col3 = st.columns([1.2, 1.3, 1.0])
 
 selected_record = next(r for r in crew_records if r["name"] == selected_astro_name)
+indicator_scores = {
+    "Skin Condition": selected_record["skin_index"],
+    "Blood Sugar Stability": max(0, 100 - abs(selected_record["blood_sugar"] - 95)),
+    "RBC Density": min(100, (selected_record["rbc_density"] / 5.0) * 100),
+    "Immune Resilience": selected_record["immune_score"],
+    "Cardiovascular": selected_record["cardio_score"],
+}
 
 # 1. WEB (RADAR) CHART: Color-coded 5-indicator snapshot
 with col1:
@@ -428,33 +435,41 @@ with col1:
     )
     st.plotly_chart(fig_radar, use_container_width=True)
 
-# 2. BAR CHART: Multi-astronaut comparative health indicators
+# 2. BAR CHART: Selected astronaut's health indicators
 with col2:
     bar_df = pd.DataFrame({
-        "Astronaut": [r["name"].split()[-1] for r in crew_records],
-        "Skin Index": [r["skin_index"] for r in crew_records],
-        "Immune Score": [r["immune_score"] for r in crew_records],
-        "Cardio Score": [r["cardio_score"] for r in crew_records],
-        "RBC (%)": [round((r["rbc_density"] / 5.0) * 100, 1) for r in crew_records]
+        "Indicator": list(indicator_scores.keys()),
+        "Score": list(indicator_scores.values()),
     })
-    bar_melted = bar_df.melt(id_vars="Astronaut", var_name="Indicator", value_name="Score")
     fig_bar = px.bar(
-        bar_melted,
-        x="Astronaut",
+        bar_df,
+        x="Indicator",
         y="Score",
         color="Indicator",
-        barmode="group",
-        title="Crew Biometric Comparison (Smart-Vest Hourly)",
-        color_discrete_sequence=["#38bdf8", "#a78bfa", "#34d399", "#f87171"]
+        title=f"Health Indicators: {selected_record['name']}",
+        color_discrete_sequence=["#38bdf8", "#a78bfa", "#34d399", "#f87171", "#fbbf24"]
     )
-    fig_bar.update_layout(height=350, margin=dict(l=20, r=20, t=50, b=30), yaxis_range=[0, 110])
+    fig_bar.update_layout(
+        height=350,
+        margin=dict(l=20, r=20, t=50, b=30),
+        yaxis_range=[0, 110],
+        showlegend=False,
+        xaxis_title=None,
+    )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-# 3. PIE CHART: Overall Crew Status Distribution
+# 3. PIE CHART: Selected astronaut's indicator status distribution
 with col3:
-    status_counts = df_crew["status_color"].value_counts().reset_index()
-    status_counts.columns = ["Status", "Count"]
-    label_map = {"Green": "Optimal (Green)", "Yellow": "Caution (Amber)", "Red": "Critical (Red)"}
+    indicator_status = pd.Series(indicator_scores).map(
+        lambda score: "Optimal" if score >= 85 else ("Caution" if score >= 65 else "Critical")
+    )
+    status_counts = (
+        indicator_status.value_counts()
+        .reindex(["Optimal", "Caution", "Critical"], fill_value=0)
+        .rename_axis("Status")
+        .reset_index(name="Count")
+    )
+    label_map = {"Optimal": "Optimal (Green)", "Caution": "Caution (Amber)", "Critical": "Critical (Red)"}
     color_map = {"Optimal (Green)": "#00c853", "Caution (Amber)": "#ffa726", "Critical (Red)": "#ff4b4b"}
     status_counts["Label"] = status_counts["Status"].map(label_map)
 
@@ -465,7 +480,7 @@ with col3:
         hole=0.45,
         color="Label",
         color_discrete_map=color_map,
-        title="Crew Readiness Status"
+        title=f"Indicator Status: {selected_record['name']}"
     )
     fig_pie.update_layout(height=350, margin=dict(l=20, r=20, t=50, b=30))
     st.plotly_chart(fig_pie, use_container_width=True)
