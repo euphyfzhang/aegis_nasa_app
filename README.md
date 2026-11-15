@@ -62,3 +62,8 @@ Open the local URL printed by Streamlit, usually `http://localhost:8501`. Using 
 ## Data and limitations
 
 Astronaut profiles, habitat readings, mission events, and hourly history are simulated in the app; it does not connect to NASA systems, live sensors, or a Neo4j database. Emergency and exercise controls only display demo feedback—they do not send messages or perform real medical actions. This dashboard is for demonstration and is not a medical or operational tool.
+
+### Reference and Resources
+- 5 Hazards of Human Spaceflight:  https://www.nasa.gov/hrp/hazards/
+- Risks of Human Spaceflight : https://www.nasa.gov/hrp/risks/
+- Monitoring radiation for astronaut health : https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp
